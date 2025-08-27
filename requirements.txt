@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+pydantic
+motor
+asyncpg
+sqlalchemy
+celery
+redis
+python-dotenv
+asgiref
+psycopg2-binary

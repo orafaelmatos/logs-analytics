@@ -1,0 +1,66 @@
+version: "3.9"
+
+services:
+  app:
+    build: .
+    container_name: fastapi_app
+    command: uvicorn app.main:app --host ${APP_HOST} --port ${APP_PORT} --reload
+    volumes:
+      - ./backend:/app
+    ports:
+      - "${APP_PORT}:${APP_PORT}"
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - mongo
+      - redis
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  mongo:
+    image: mongo:6
+    container_name: mongo
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "${MONGO_PORT}:${MONGO_PORT}"
+    volumes:
+      - mongodata:/data/db
+
+  redis:
+    image: redis:7
+    container_name: redis
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "${REDIS_PORT}:${REDIS_PORT}"
+
+  celery:
+    build: .
+    container_name: celery_app
+    command: celery -A app.celery_app worker --loglevel=info -Q logs
+    volumes:
+      - ./backend:/app
+    env_file:
+      - .env
+    depends_on:
+      - app
+      - redis
+      - postgres
+      - mongo
+
+volumes:
+  pgdata:
+  mongodata:
