@@ -1,18 +1,15 @@
 import pytest
+import pytest_asyncio
 import asyncio
-from typing import AsyncGenerator, Generator
+from typing import Generator
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 from datetime import datetime, timedelta
 from faker import Faker
+from unittest.mock import patch
 
 from backend.app.main import app
-from backend.app.database import AsyncSessionLocal
-from backend.app.models import Base
 from backend.app.schemas import LogCreate
 
 # Create Faker instance for test data
@@ -25,39 +22,6 @@ def event_loop():
     yield loop
     loop.close()
 
-@pytest.fixture
-def test_db_engine():
-    """Create test database engine using SQLite for faster tests."""
-    engine = create_async_engine(
-        "sqlite+aiosqlite:///:memory:",
-        poolclass=StaticPool,
-        echo=False,
-    )
-    return engine
-
-@pytest.fixture
-async def test_db_session(test_db_engine) -> AsyncGenerator[AsyncSession, None]:
-    """Create test database session."""
-    async_session = sessionmaker(
-        test_db_engine, class_=AsyncSession, expire_on_commit=False
-    )
-    
-    async with test_db_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    
-    async with async_session() as session:
-        yield session
-    
-    async with test_db_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
-
-@pytest.fixture
-async def override_get_db(test_db_session: AsyncSession):
-    """Override database dependency for testing."""
-    async def _override_get_db():
-        yield test_db_session
-    
-    return _override_get_db
 
 @pytest.fixture
 def client() -> Generator:
@@ -65,20 +29,10 @@ def client() -> Generator:
     with TestClient(app) as c:
         yield c
 
-@pytest.fixture
-def async_client() -> AsyncClient:
-    """Create async test client for FastAPI app."""
-    return AsyncClient(app=app, base_url="http://test")
-
-@pytest.fixture
-def mock_celery():
-    """Mock Celery app and tasks."""
-    with patch('backend.app.main.celery_app') as mock_celery_app:
-        with patch('backend.app.main.process_log_task') as mock_task:
-            mock_result = Mock()
-            mock_result.id = "test-task-id-123"
-            mock_task.delay.return_value = mock_result
-            yield mock_celery_app, mock_task
+@pytest_asyncio.fixture
+async def async_client():
+    async with AsyncClient(app=app, base_url="http://test") as client:
+        yield client
 
 @pytest.fixture
 def sample_log_data():
@@ -137,12 +91,6 @@ def multiple_logs_data():
         }
     ]
 
-@pytest.fixture
-def mock_async_session():
-    """Mock async database session."""
-    with patch('backend.app.database.AsyncSessionLocal') as mock_session:
-        mock_session.return_value.__aenter__.return_value = Mock()
-        yield mock_session
 
 @pytest.fixture
 def fixed_datetime():
