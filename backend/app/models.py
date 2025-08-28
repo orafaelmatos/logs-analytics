@@ -1,8 +1,10 @@
 # models.py
 from sqlalchemy import Column, Integer, String, DateTime, JSON
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import DeclarativeBase
 
-Base = declarative_base()
+
+class Base(DeclarativeBase):
+    pass
 
 class LogMetric(Base):
     __tablename__ = "log_metrics"
