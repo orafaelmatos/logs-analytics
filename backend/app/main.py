@@ -16,7 +16,7 @@ ALERT_THRESHOLD = 5
 
 @app.post("/logs/")
 async def create_log(log: LogCreate):
-    log_dict = log.dict()
+    log_dict = log.model_dump()
     try:
         # Envia para processamento assíncrono
         task = process_log_task.delay(log_dict)
@@ -94,7 +94,7 @@ async def get_logs_by_level(level_name: str, limit: int = 100):
                 "service": l.service,
                 "level": l.level,
                 "count": l.count,
-                "timestamp": l.timestamp,
+                "timestamp": l.timestamp.isoformat(),
             }
             for l in logs
         ]

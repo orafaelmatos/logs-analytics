@@ -11,3 +11,12 @@ class LogMetric(Base):
     level = Column(String)
     count = Column(Integer, default=1)
     timestamp = Column(DateTime)
+    log_metadata = Column(JSON, default={})
+    
+    def __init__(self, **kwargs):
+        if 'count' not in kwargs:
+            kwargs['count'] = 1
+        super().__init__(**kwargs)
+    
+    def __repr__(self):
+        return f"<LogMetric(service='{self.service}', level='{self.level}', count={self.count}, timestamp='{self.timestamp}')>"

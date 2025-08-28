@@ -1,19 +1,10 @@
 # tasks.py
 from .celery_app import celery_app
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine
-from pymongo import MongoClient
+from .database import AsyncSessionLocal, mongo_db
 from .models import LogMetric
 from datetime import datetime
-
-
-# PostgreSQL síncrono
-engine = create_engine("postgresql://postgres:postgres@postgres:5432/logs")
-SessionLocal = sessionmaker(bind=engine)
-
-# MongoDB síncrono
-mongo_client = MongoClient("mongodb://mongo:27017")
-mongo_db = mongo_client.logs
+import asyncio
+from sqlalchemy.future import select
 
 def truncate_minute(dt: datetime) -> datetime:
     """Trunca datetime para o início do minuto"""
@@ -34,33 +25,41 @@ def process_log_task(log_data: dict):
     log_ts = log_data["timestamp"]
     interval_start = truncate_minute(log_ts)
     
-    session = SessionLocal()
-    try:
-        metric = (
-            session.query(LogMetric)
-            .filter_by(
-                service=log_data["service"],
-                level=log_data["level"],
-                timestamp=interval_start
-            )
-            .first()
-        )
+    # Run async database operations in a new event loop
+    def run_async_db_operations():
+        async def async_db_ops():
+            async with AsyncSessionLocal() as session:
+                # Use SQLAlchemy 2.x async syntax
+                stmt = select(LogMetric).filter_by(
+                    service=log_data["service"],
+                    level=log_data["level"],
+                    timestamp=interval_start
+                )
+                result = await session.execute(stmt)
+                metric = result.scalar_one_or_none()
 
-        if metric:
-            metric.count += 1
-        else:
-            metric = LogMetric(
-                service=log_data["service"],
-                level=log_data["level"],
-                count=1,
-                timestamp=interval_start
-            )
-            session.add(metric)
+                if metric:
+                    metric.count += 1
+                else:
+                    metric = LogMetric(
+                        service=log_data["service"],
+                        level=log_data["level"],
+                        count=1,
+                        timestamp=interval_start
+                    )
+                    session.add(metric)
 
-        session.commit()
+                await session.commit()
 
-    finally:
-        session.close()
+        # Create new event loop for this thread
+        try:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            loop.run_until_complete(async_db_ops())
+        finally:
+            loop.close()
+
+    run_async_db_operations()
 
     return {
         "mongo_inserted": True,
