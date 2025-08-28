@@ -4,7 +4,7 @@ from .schemas import LogCreate
 from .tasks import process_log_task, truncate_minute
 from celery.result import AsyncResult
 from .celery_app import celery_app
-from typing import Optional, List
+from typing import Optional
 from .database import AsyncSessionLocal
 from .models import LogMetric
 from datetime import datetime
@@ -18,14 +18,11 @@ ALERT_THRESHOLD = 5
 async def create_log(log: LogCreate):
     log_dict = log.model_dump()
     try:
-        # Envia para processamento assíncrono
         task = process_log_task.delay(log_dict)
 
-        # Calcula timestamp truncado para o mesmo minuto
         log_ts = log_dict["timestamp"]
         interval_start = truncate_minute(log_ts)
 
-        # Consulta count atual do mesmo service e level
         async with AsyncSessionLocal() as session:
             result = await session.execute(
                 select(LogMetric)
@@ -36,7 +33,7 @@ async def create_log(log: LogCreate):
                 )
             )
             metric = result.scalar_one_or_none()
-            current_count = metric.count if metric else 0
+            current_count = metric.count if metric else 1
 
         alert_msg = None
         if current_count >= ALERT_THRESHOLD:
