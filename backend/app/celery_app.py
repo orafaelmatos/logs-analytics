@@ -10,5 +10,3 @@ celery_app = Celery(
 celery_app.conf.task_routes = {
     "app.tasks.process_log_task": {"queue": "logs"}
 }
-
-import app.tasks
