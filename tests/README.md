@@ -9,11 +9,7 @@ tests/
 ├── __init__.py              # Package initialization
 ├── conftest.py              # Pytest configuration and fixtures
 ├── test_main.py             # Main API endpoint tests
-├── test_schemas.py          # Pydantic schema validation tests
-├── test_models.py           # SQLAlchemy model tests
-├── test_database.py         # Database connection and utility tests
 ├── test_tasks.py            # Celery task tests
-├── test_integration.py      # End-to-end integration tests
 └── README.md                # This file
 ```
 
