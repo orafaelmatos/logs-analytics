@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import Mock, patch, MagicMock, AsyncMock
+from unittest.mock import Mock, patch, AsyncMock
 from datetime import datetime, timedelta
 
 
@@ -9,7 +9,6 @@ from backend.app.tasks import truncate_minute, process_log_task
 class TestTruncateMinute:
     """Test cases for truncate_minute utility function."""
     
-    @pytest.mark.unit
     def test_truncate_minute_removes_seconds_and_microseconds(self):
         """Test that truncate_minute removes seconds and microseconds."""
         # Test with seconds and microseconds
@@ -19,7 +18,6 @@ class TestTruncateMinute:
         expected = datetime(2024, 1, 15, 12, 30, 0, 0)
         assert truncated == expected
     
-    @pytest.mark.unit
     def test_truncate_minute_preserves_date_and_time(self):
         """Test that truncate_minute preserves date and time components."""
         # Test with different date/time combinations
@@ -43,7 +41,6 @@ class TestTruncateMinute:
             assert truncated.second == 0
             assert truncated.microsecond == 0
     
-    @pytest.mark.unit
     def test_truncate_minute_edge_cases(self):
         """Test truncate_minute with edge cases."""
         # Test with already truncated datetime
@@ -62,7 +59,6 @@ class TestTruncateMinute:
         expected = datetime(2024, 1, 15, 12, 30, 0, 0)
         assert truncated == expected
     
-    @pytest.mark.unit
     def test_truncate_minute_timezone_aware(self):
         """Test truncate_minute with timezone-aware datetimes."""
         from datetime import timezone
@@ -83,7 +79,6 @@ class TestTruncateMinute:
         expected = datetime(2024, 1, 15, 12, 30, 0, 0, tzinfo=tz)
         assert truncated == expected
     
-    @pytest.mark.unit
     def test_truncate_minute_immutability(self):
         """Test that truncate_minute doesn't modify the original datetime."""
         original_dt = datetime(2024, 1, 15, 12, 30, 45, 123456)
@@ -132,7 +127,6 @@ class TestProcessLogTask:
         mock_session.query.return_value = mock_query
         return mock_session, mock_query
     
-    @pytest.mark.unit
     @patch('backend.app.tasks.mongo_db')
     @patch('backend.app.tasks.AsyncSessionLocal')
     def test_process_log_task_success_new_metric(self, mock_async_session_local, mock_mongo_db, sample_log_data):
@@ -168,7 +162,6 @@ class TestProcessLogTask:
         assert result["service"] == "test-service"
         assert result["level"] == "ERROR"
     
-    @pytest.mark.unit
     @patch('backend.app.tasks.mongo_db')
     @patch('backend.app.tasks.AsyncSessionLocal')
     def test_process_log_task_success_existing_metric(self, mock_async_session_local, mock_mongo_db, sample_log_data):
@@ -206,7 +199,6 @@ class TestProcessLogTask:
         assert result["mongo_inserted"] is True
         assert result["postgres_updated"] is True
     
-    @pytest.mark.unit
     @patch('backend.app.tasks.mongo_db')
     @patch('backend.app.tasks.AsyncSessionLocal')
     def test_process_log_task_mongo_error(self, mock_async_session_local, mock_mongo_db, sample_log_data):
@@ -226,7 +218,6 @@ class TestProcessLogTask:
         with pytest.raises(Exception, match="MongoDB connection failed"):
             process_log_task(sample_log_data)
     
-    @pytest.mark.unit
     @patch('backend.app.tasks.mongo_db')
     @patch('backend.app.tasks.AsyncSessionLocal')
     def test_process_log_task_postgres_error(self, mock_async_session_local, mock_mongo_db, sample_log_data):
@@ -253,7 +244,6 @@ class TestProcessLogTask:
         with pytest.raises(Exception, match="PostgreSQL commit failed"):
             process_log_task(sample_log_data)
     
-    @pytest.mark.unit
     @patch('backend.app.tasks.mongo_db')
     @patch('backend.app.tasks.AsyncSessionLocal')
     def test_process_log_task_session_cleanup_on_error(self, mock_async_session_local, mock_mongo_db, sample_log_data):
@@ -275,7 +265,6 @@ class TestProcessLogTask:
         with pytest.raises(Exception, match="Query failed"):
             process_log_task(sample_log_data)
     
-    @pytest.mark.unit
     @patch('backend.app.tasks.mongo_db')
     @patch('backend.app.tasks.AsyncSessionLocal')
     def test_process_log_task_timestamp_truncation(self, mock_async_session_local, mock_mongo_db):
@@ -321,7 +310,6 @@ class TestProcessLogTask:
             mock_collection.reset_mock()
             mock_session.reset_mock()
     
-    @pytest.mark.unit
     @patch('backend.app.tasks.mongo_db')
     @patch('backend.app.tasks.AsyncSessionLocal')
     def test_process_log_task_metric_creation(self, mock_async_session_local, mock_mongo_db, sample_log_data):
@@ -353,7 +341,6 @@ class TestProcessLogTask:
         assert created_metric.count == 1
         assert created_metric.timestamp == truncate_minute(sample_log_data["timestamp"])
     
-    @pytest.mark.unit
     @patch('backend.app.tasks.mongo_db')
     @patch('backend.app.tasks.AsyncSessionLocal')
     def test_process_log_task_metric_update(self, mock_async_session_local, mock_mongo_db, sample_log_data):
@@ -386,7 +373,6 @@ class TestProcessLogTask:
         # Verify no new metric was added
         mock_session.add.assert_not_called()
     
-    @pytest.mark.unit
     @patch('backend.app.tasks.mongo_db')
     @patch('backend.app.tasks.AsyncSessionLocal')
     def test_process_log_task_different_log_levels(self, mock_async_session_local, mock_mongo_db):
@@ -427,7 +413,6 @@ class TestProcessLogTask:
             mock_collection.reset_mock()
             mock_session.reset_mock()
     
-    @pytest.mark.unit
     @patch('backend.app.tasks.mongo_db')
     @patch('backend.app.tasks.AsyncSessionLocal')
     def test_process_log_task_different_services(self, mock_async_session_local, mock_mongo_db):
@@ -468,7 +453,6 @@ class TestProcessLogTask:
             mock_collection.reset_mock()
             mock_session.reset_mock()
     
-    @pytest.mark.unit
     @patch('backend.app.tasks.mongo_db')
     @patch('backend.app.tasks.AsyncSessionLocal')
     def test_process_log_task_metadata_handling(self, mock_async_session_local, mock_mongo_db):
@@ -523,7 +507,6 @@ class TestProcessLogTask:
         stored_data = mock_collection.insert_one.call_args[0][0]
         assert stored_data["metadata"] == complex_metadata
     
-    @pytest.mark.unit
     @patch('backend.app.tasks.mongo_db')
     @patch('backend.app.tasks.AsyncSessionLocal')
     def test_process_log_task_return_value_structure(self, mock_async_session_local, mock_mongo_db, sample_log_data):
