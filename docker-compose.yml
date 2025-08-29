@@ -16,6 +16,19 @@ services:
       - mongo
       - redis
 
+  frontend:
+    build: ./frontend
+    container_name: react_app
+    ports:
+      - "8080:80"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - app
+
   postgres:
     image: postgres:15
     container_name: postgres
