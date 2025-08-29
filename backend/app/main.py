@@ -12,6 +12,20 @@ from sqlalchemy.future import select
 
 app = FastAPI(title="Log Analytics")
 
+origins = [
+    "http://localhost:8080",  # React dev server
+    # Add your production URL here if deployed
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # Allows requests from these origins
+    allow_credentials=True,
+    allow_methods=["*"],    # Allows all HTTP methods
+    allow_headers=["*"],    # Allows all headers
+)
+
+
 ALERT_THRESHOLD = 5
 
 @app.post("/logs/")
