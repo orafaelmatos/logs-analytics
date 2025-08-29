@@ -9,7 +9,6 @@ tests/
 ├── __init__.py              # Package initialization
 ├── conftest.py              # Pytest configuration and fixtures
 ├── test_main.py             # Main API endpoint tests
-├── test_tasks.py            # Celery task tests
 └── README.md                # This file
 ```
 
@@ -48,13 +47,6 @@ The test suite provides comprehensive coverage for:
 - ✅ **Get metrics by service** (`GET /metrics/service/{service_name}`)
 - ✅ **Get metrics by level** (`GET /metrics/level/{level_name}`)
 - ✅ **Get alerts** (`GET /alerts/`)
-
-### Celery Tasks (`test_tasks.py`)
-- ✅ **Task execution**
-- ✅ **Database operations**
-- ✅ **Error handling**
-- ✅ **Data processing**
-- ✅ **Return value validation**
 
 ## 🔧 Test Configuration
 
