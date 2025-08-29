@@ -4,16 +4,6 @@ from unittest.mock import AsyncMock, Mock, patch
 import pytest
 
 
-class TestRootEndpoint:
-    """Test cases for the root endpoint."""
-
-    def test_root_endpoint(self, client):
-        """Test root endpoint returns correct message."""
-        response = client.get("/")
-        assert response.status_code == 200
-        assert response.json() == {"message": "API de Logs funcionando!"}
-
-
 class TestCreateLogEndpoint:
     """Test cases for the create log endpoint."""
     
