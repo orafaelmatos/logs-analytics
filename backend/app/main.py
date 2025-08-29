@@ -1,5 +1,5 @@
 # main.py
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from .schemas import LogCreate
 from .tasks import process_log_task, truncate_minute
 from celery.result import AsyncResult
@@ -9,6 +9,8 @@ from .database import AsyncSessionLocal
 from .models import LogMetric
 from datetime import datetime
 from sqlalchemy.future import select
+from fastapi.middleware.cors import CORSMiddleware
+
 
 app = FastAPI(title="Log Analytics")
 
@@ -31,7 +33,11 @@ ALERT_THRESHOLD = 5
 @app.post("/logs/")
 async def create_log(log: LogCreate):
     log_dict = log.model_dump()
+    
     try:
+        if isinstance(log_dict["timestamp"], str):
+            log_dict["timestamp"] = datetime.fromisoformat(log_dict["timestamp"])
+    
         task = process_log_task.delay(log_dict)
 
         log_ts = log_dict["timestamp"]
@@ -63,6 +69,24 @@ async def create_log(log: LogCreate):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/logs/recent")
+async def get_recent_logs(limit: int = 100):
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(
+            select(LogMetric)
+            .order_by(LogMetric.timestamp.desc())
+            .limit(limit)
+        )
+        logs = result.scalars().all()
+        return [
+            {
+                "service": l.service,
+                "level": l.level,
+                "count": l.count,
+                "timestamp": l.timestamp.isoformat(),
+            }
+            for l in logs
+        ]
 
 @app.get("/tasks/{task_id}")
 def get_task_status(task_id: str):
@@ -90,6 +114,14 @@ async def get_logs_by_service(service_name: str, limit: int = 100):
         ]
 
 
+@app.get("/services")
+async def get_services():
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(select(LogMetric.service).distinct())
+        services = [row[0] for row in result.fetchall()]
+        return {"services": services}
+    
+    
 @app.get("/logs/level/{level_name}")
 async def get_logs_by_level(level_name: str, limit: int = 100):
     async with AsyncSessionLocal() as session:
