@@ -4,8 +4,13 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from motor.motor_asyncio import AsyncIOMotorClient
 from dotenv import load_dotenv
+from sqlalchemy import create_engine
 
 load_dotenv()
+
+SYNC_DATABASE_URL = os.getenv("POSTGRES_SYNC_URL", "postgresql://postgres:postgres@postgres:5432/logs")
+sync_engine = create_engine(SYNC_DATABASE_URL)
+SessionLocal = sessionmaker(sync_engine, expire_on_commit=False)
 
 # PostgreSQL (analítico)
 DATABASE_URL = os.getenv("POSTGRES_URL", f"postgresql+asyncpg://postgres:postgres@{os.getenv('POSTGRES_HOST', 'postgres')}:{os.getenv('POSTGRES_PORT', 5432)}/logs")
