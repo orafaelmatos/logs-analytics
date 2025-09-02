@@ -54,3 +54,7 @@ cd logs-analytics
 ```bash
 docker-compose up --build
 ```
+
+### A aplicação vai esta disponível
+ -  [http://localhost:8080](http://localhost:8080)
+
