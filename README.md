@@ -1,8 +1,15 @@
-# Plataforma de Análise de Logs
+<img width="800" height="250" alt="Logs_Analytics" src="https://github.com/user-attachments/assets/7fe5ee5e-9555-490f-b2be-8a67854fb7a2" />
+
 Uma aplicação **full-stack** de análise de logs que permite aos usuários registrar logs, monitorar métricas, acompanhar alertas e filtrar logs por serviço ou nível de gravidade.  
-O backend é construído com **FastAPI** e **Celery** para processamento assíncrono, enquanto o frontend é feito com **React + TypeScript** para uma interface moderna e interativa.
 
 ---
+
+## Demonstração
+
+
+https://github.com/user-attachments/assets/a63fb80e-1d6e-4f4d-b221-104022b5e646
+
+
 
 
 ## Funcionalidades
