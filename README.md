@@ -16,13 +16,12 @@ O backend é construído com **FastAPI** e **Celery** para processamento assínc
 - **Suporte a CORS**: Permite integração com clientes externos.
 
 
-## Backend
+## Tecnologias
 
-- **Framework**: FastAPI  
-- **Tarefas Assíncronas**: Celery  
+- **Backend**: FastAPI, Celery   
 - **Banco de Dados**: PostgreSQL (via SQLAlchemy async)  
-- **Modelos Principais**: `LogMetric`, `LogCreate`  
-- **Limite de Alerta**: Configurável via `ALERT_THRESHOLD`
+- **Frontend**: React + TypeScript
+- 
 
 ### Endpoints da API
 
@@ -44,14 +43,14 @@ O backend é construído com **FastAPI** e **Celery** para processamento assínc
 
 ---
 
+## Setup (Desenvolvimento local)
 
-## Frontend
-
-- **Framework**: React + TypeScript  
-- **Funcionalidades**:
-  - Dashboard com visualização de métricas.
-  - Lista de logs com filtros.
-  - Visão geral de alertas.
-  - Integração com a API do backend.
-
----
+### 1 - Clone the Repository
+```bash
+git clone https://github.com/orafaelmatos/logs-analytics.git
+cd logs-analytics
+```
+### 2 - Run with Docker (recommended)
+```bash
+docker-compose up --build
+```
