@@ -3,8 +3,7 @@ version: "3.9"
 services:
   app:
     build: .
-    container_name: fastapi_app
-    command: uvicorn app.main:app --host ${APP_HOST} --port ${APP_PORT} --reload
+    container_name: fastapi_logs_analytics
     volumes:
       - ./backend:/app
     ports:
@@ -18,7 +17,7 @@ services:
 
   frontend:
     build: ./frontend
-    container_name: react_app
+    container_name: react_logs_analytics
     ports:
       - "8080:80"
     environment:
@@ -31,7 +30,7 @@ services:
 
   postgres:
     image: postgres:15
-    container_name: postgres
+    container_name: postgres_logs_analytics
     restart: always
     env_file:
       - .env
@@ -42,7 +41,7 @@ services:
 
   mongo:
     image: mongo:6
-    container_name: mongo
+    container_name: mongo_logs_analytics
     restart: always
     env_file:
       - .env
@@ -53,7 +52,7 @@ services:
 
   redis:
     image: redis:7
-    container_name: redis
+    container_name: redis_logs_analytics
     restart: always
     env_file:
       - .env
@@ -62,7 +61,7 @@ services:
 
   celery:
     build: .
-    container_name: celery_app
+    container_name: celery_logs_analytics
     command: celery -A app.celery_app worker --loglevel=info -Q logs
     volumes:
       - ./backend:/app
